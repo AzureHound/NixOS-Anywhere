@@ -27,7 +27,7 @@
           nixos-hardware.nixosModules.raspberry-pi-5
 
           ./disko.nix
-          ./hardware-configuration.nix
+          ./hardware.nix
 
           ({ pkgs, ... }: {
             networking = {
