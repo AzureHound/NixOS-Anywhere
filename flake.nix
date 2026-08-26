@@ -9,27 +9,35 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    nixos-hardware.url = "github:NixOS/nixos-hardware/master";
+    nixos-raspberrypi.url = "github:nvmd/nixos-raspberrypi/main";
   };
 
   outputs =
     {
       nixpkgs,
       disko,
-      nixos-hardware,
+      nixos-raspberrypi,
       ...
-    }:
+    }@inputs:
     {
       nixosConfigurations.Legion = nixpkgs.lib.nixosSystem {
         system = "aarch64-linux";
+        specialArgs = {
+          inherit inputs;
+          nixos-raspberrypi = inputs.nixos-raspberrypi;
+        };
         modules = [
           disko.nixosModules.disko
-          nixos-hardware.nixosModules.raspberry-pi-5
+          nixos-raspberrypi.nixosModules.raspberry-pi-5.base
+          nixos-raspberrypi.nixosModules.trusted-nix-caches
+          nixos-raspberrypi.lib.inject-overlays
 
           ./disko.nix
           ./hardware.nix
 
           ({ pkgs, ... }: {
+            boot.loader.raspberry-pi.bootloader = "kernel";
+
             networking = {
               hostName = "Legion";
               networkmanager.enable = true;
@@ -48,7 +56,6 @@
             environment.systemPackages = with pkgs; [
               git
               vim
-
               libraspberrypi
               raspberrypi-eeprom
             ];
